@@ -697,9 +697,9 @@ bool WalletBackend::removePreparedTransaction(const Crypto::Hash &transactionHas
     return removed;
 }
 
-std::tuple<Error, Crypto::Hash> WalletBackend::sendPreparedTransaction(const Crypto::Hash transactionHash)
+std::tuple<Error, Crypto::Hash> WalletBackend::sendPreparedTransaction(const Crypto::Hash transactionHash)   //1
 {
-    std::scoped_lock lock(m_transactionMutex);
+    std::scoped_lock lock(m_transactionMutex);  // transaction을 한번에 하나만 보낼수있도록 함. 
 
     auto it = m_preparedTransactions.find(transactionHash);
 
@@ -710,7 +710,7 @@ std::tuple<Error, Crypto::Hash> WalletBackend::sendPreparedTransaction(const Cry
 
     const auto preparedTransaction = it->second;
 
-    const auto [error, hash] = SendTransaction::sendPreparedTransaction(preparedTransaction, m_daemon, m_subWallets);
+    const auto [error, hash] = SendTransaction::sendPreparedTransaction(preparedTransaction, m_daemon, m_subWallets);   //2  preparedtransaction에 txinfo stored
 
     /* Remove the prepared transaction if we just sent it or it's no longer
      * valid */
@@ -734,13 +734,13 @@ std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> WalletBack
 {
     std::scoped_lock lock(m_transactionMutex);
 
-    const auto [error, hash, preparedTransaction] = SendTransaction::sendTransactionBasic(
+    const auto [error, hash, preparedTransaction] = SendTransaction::sendTransactionBasic(           //1
         destination, amount, deadline, paymentID, m_daemon, m_subWallets, sendAll, sendTransaction);
 
     if (!sendTransaction && !error)
     {
-        m_preparedTransactions[hash] = preparedTransaction;
-    }
+        m_preparedTransactions[hash] = preparedTransaction;       //m_preparedTransactions에 preparedtransaction의 hash값을 저장한다. 
+    }                                                              //preparedtransaction에는 txinfo(transaction관련 정보 다있음) 저장됨. 
 
     return {error, hash, preparedTransaction};
 }

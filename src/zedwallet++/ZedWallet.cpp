@@ -131,7 +131,7 @@ int main(int argc, char **argv)
            being re-entrant. */
         Tools::SignalHandler::install([&ctrl_c] { ctrl_c = true; });
 
-        /* Don't explicitly sync in foreground if it's a new wallet */
+        /* Don't explicitly sync in foreground if it's a new wallet */          //기존에 있던 wallet이라면 backend의 데이터와 sync함.
         if (sync)
         {
             syncWallet(walletBackend);
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
         txMonitorThread = std::thread(&TransactionMonitor::start, txMonitor.get());
 
         /* Launch the wallet interface */
-        mainLoop(walletBackend, txMonitor->getMutex());
+        mainLoop(walletBackend, txMonitor->getMutex());             //mainloop start
 
         /* Cleanup the threads */
         cleanup(txMonitorThread, ctrlCWatcher, stop, txMonitor);

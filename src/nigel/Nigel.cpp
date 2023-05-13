@@ -520,7 +520,7 @@ std::tuple<bool, bool, std::string> Nigel::sendTransaction(const CryptoNote::Tra
     /* If we received a 202 back, then the transaction was accepted by the daemon */
     if (res->status == 202)
     {
-        return {true, false, error};
+        return {true, false, error};     //transaction success by daemon 
     }
 
     bool connectionError = true;

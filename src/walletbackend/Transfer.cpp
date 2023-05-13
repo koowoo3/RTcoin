@@ -151,7 +151,7 @@ namespace SendTransaction
             const uint64_t unlockTime = 0;
 
             WalletTypes::TransactionResult txResult =
-                makeTransaction(mixin, daemon, ourInputs, paymentID, destinations, subWallets, unlockTime, extraData);
+                makeTransaction(mixin, daemon, ourInputs, paymentID, destinations, subWallets, unlockTime, extraData, deadline);  // add deadline
 
             tx = txResult.transaction;
             transactionOutputs = txResult.outputs;
@@ -250,7 +250,7 @@ namespace SendTransaction
 
         const uint64_t unlockTime = 0;
 
-        return sendTransactionAdvanced(
+        return sendTransactionAdvanced(                                 //1
             destinations,
             deadline,  //deadline 추가
             defaultMixin,
@@ -266,7 +266,7 @@ namespace SendTransaction
             sendTransaction);
     }
 
-    std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionAdvanced(
+    std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionAdvanced(          //1
         std::vector<std::pair<std::string, uint64_t>> addressesAndAmounts,    
         const uint64_t deadline,    //deadline 추가
         const uint64_t mixin,
@@ -297,7 +297,7 @@ namespace SendTransaction
         /* Validate the transaction input parameters */
         Error error = validateTransaction(
             addressesAndAmounts,
-            deadline,     //deadline추가
+            deadline,     //deadline추가      Deadline는 validate  뺄까
             mixin,
             fee,
             paymentID,
@@ -418,7 +418,8 @@ namespace SendTransaction
                             subWallets,
                             unlockTime,
                             extraData,
-                            sendAll);
+                            sendAll,
+                            deadline);   //deadline 추가
 
                         if (success)
                         {
@@ -441,8 +442,8 @@ namespace SendTransaction
                 }
                 else
                 {
-                    txResult = makeTransaction(
-                        mixin, daemon, ourInputs, paymentID, destinations, subWallets, unlockTime, extraData);
+                    txResult = makeTransaction(                             //2
+                        mixin, daemon, ourInputs, paymentID, destinations, subWallets, unlockTime, extraData, deadline);   //deadline 추가
 
                     const uint64_t minFee = Utilities::getMinimumTransactionFee(
                         toBinaryArray(txResult.transaction).size(), daemon->networkBlockCount());
@@ -521,12 +522,12 @@ namespace SendTransaction
                 subWallets->markInputAsLocked(input.input.keyImage, input.publicSpendKey);
             }
 
-            return {SUCCESS, txHash, txInfo};
+            return {SUCCESS, txHash, txInfo};                   //3
         }
         else
         {
             txInfo.transactionHash = getTransactionHash(txResult.transaction);
-            return {SUCCESS, txInfo.transactionHash, txInfo};
+            return {SUCCESS, txInfo.transactionHash, txInfo};                   //3
         }
     }
 
@@ -537,13 +538,13 @@ namespace SendTransaction
     {
         for (const auto &input : txInfo.inputs)
         {
-            if (!subWallets->haveSpendableInput(input.input, daemon->networkBlockCount()))
+            if (!subWallets->haveSpendableInput(input.input, daemon->networkBlockCount()))       //1
             {
                 return {PREPARED_TRANSACTION_EXPIRED, Crypto::Hash()};
             }
         }
 
-        const auto [sendError, txHash] = relayTransaction(txInfo.tx.transaction, daemon);
+        const auto [sendError, txHash] = relayTransaction(txInfo.tx.transaction, daemon);       //2
 
         if (sendError)
         {
@@ -558,7 +559,8 @@ namespace SendTransaction
             txInfo.inputs,
             txInfo.changeAddress,
             txInfo.changeRequired,
-            subWallets);
+            subWallets,
+            txInfo.deadline);       //add deadline 
 
         /* Update our locked balance with the incoming funds */
         storeUnconfirmedIncomingInputs(subWallets, txInfo.tx.outputs, txInfo.tx.txKeyPair.publicKey, txHash);
@@ -715,7 +717,8 @@ namespace SendTransaction
         const std::vector<WalletTypes::TxInputAndOwner> ourInputs,
         const std::string changeAddress,
         const uint64_t changeRequired,
-        const std::shared_ptr<SubWallets> subWallets)
+        const std::shared_ptr<SubWallets> subWallets,
+        const uint64_t deadline)  //deadline추가
     {
         std::unordered_map<Crypto::PublicKey, int64_t> transfers;
 
@@ -742,7 +745,7 @@ namespace SendTransaction
         /* Create the unconfirmed transaction (Will be overwritten by the
            confirmed transaction later) */
         WalletTypes::Transaction tx(
-            transfers, hash, fee, timestamp, blockHeight, paymentID, unlockTime, isCoinbaseTransaction);
+            transfers, hash, fee, timestamp, blockHeight, paymentID, unlockTime, isCoinbaseTransaction, deadline);    //deadline 추가
 
         subWallets->addUnconfirmedTransaction(tx);
     }
@@ -1391,6 +1394,8 @@ namespace SendTransaction
             result.error = OUTPUT_DECOMPOSITION;
             return result;
         }
+        /*deadline 추가*/
+        setupTX.deadline = deadline;
 
         /* Pubkey, payment ID */
         setupTX.extra = extra;

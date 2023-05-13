@@ -92,7 +92,7 @@ void transfer(const std::shared_ptr<WalletBackend> walletBackend, const bool sen
     bool success;
     uint64_t deadline;  // 
                         
-    std::tie(success, deadline) = getDeadline("what time do you want to end?", cancelAllowed);
+    std::tie(success, deadline) = getDeadline("what time do you want to end?", cancelAllowed);      // 1
 
     if(!success)  //deadline이 불가능하다면 cancel 해준다. + deadline 관련하여 불가능 조건찾아야함. 
     {
@@ -113,10 +113,10 @@ void transfer(const std::shared_ptr<WalletBackend> walletBackend, const bool sen
         return;
     }
 
-    sendTransaction(walletBackend, address, amount, deadline, paymentID, sendAll);
+    sendTransaction(walletBackend, address, amount, deadline, paymentID, sendAll);   //2
 }
 
-void sendTransaction(
+void sendTransaction(    //2
     const std::shared_ptr<WalletBackend> walletBackend,
     const std::string address,
     const uint64_t amount,
@@ -150,7 +150,7 @@ void sendTransaction(
     Error error;
     WalletTypes::PreparedTransactionInfo preparedTransaction;  //deadline 추가했음. 
 
-    std::tie(error, std::ignore, preparedTransaction) = walletBackend->sendTransactionBasic(
+    std::tie(error, std::ignore, preparedTransaction) = walletBackend->sendTransactionBasic(     //3
         address, amount, deadline, paymentID, sendAll, false /* Don't relay to network */
     );
 
@@ -183,7 +183,7 @@ void sendTransaction(
         optimize(walletBackend);
 
         /* Resend the transaction */
-        std::tie(error, std::ignore, preparedTransaction) = walletBackend->sendTransactionBasic(
+        std::tie(error, std::ignore, preparedTransaction) = walletBackend->sendTransactionBasic(    //3
             address, amount, deadline, paymentID, sendAll, false /* Don't relay to network */
         );
 
@@ -210,7 +210,7 @@ void sendTransaction(
      * the fee worked out. */
     const uint64_t actualAmount = sendAll ? unlockedBalance - nodeFee - preparedTransaction.fee : amount;
 
-    if (!confirmTransaction(walletBackend, address, actualAmount, paymentID, nodeFee, preparedTransaction.fee))
+    if (!confirmTransaction(walletBackend, address, actualAmount, deadline, paymentID, nodeFee, preparedTransaction.fee))   //4
     {
         cancel();
         return;
@@ -218,7 +218,7 @@ void sendTransaction(
 
     Crypto::Hash hash;
 
-    std::tie(error, hash) = walletBackend->sendPreparedTransaction(preparedTransaction.transactionHash);
+    std::tie(error, hash) = walletBackend->sendPreparedTransaction(preparedTransaction.transactionHash);    //5
 
     if (error)
     {
@@ -234,6 +234,7 @@ bool confirmTransaction(
     const std::shared_ptr<WalletBackend> walletBackend,
     const std::string address,
     const uint64_t amount,
+    const uint64_t deadline,            //deadline 추가
     const std::string paymentID,
     const uint64_t nodeFee,
     const uint64_t fee)
@@ -265,6 +266,8 @@ bool confirmTransaction(
         ZedUtilities::confirmPassword(walletBackend, "Confirm your password: ");
         return true;
     }
+
+    //deadline 확인하는 거 넣을까?
 
     return false;
 }
