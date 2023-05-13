@@ -86,6 +86,19 @@ void transfer(const std::shared_ptr<WalletBackend> walletBackend, const bool sen
             return;
         }
     }
+    /*deadline chrono system_clock::time_point start = system_clock::now(); 로 현재시간 구하고
+    start += std::chrono::seconds{ 10 }; 이런식으로 만들어서 deadline = start 로 만들면 될듯.
+    */
+    bool success;
+    uint64_t deadline;  // 
+                        
+    std::tie(success, deadline) = getDeadline("what time do you want to end?", cancelAllowed);
+
+    if(!success)  //deadline이 불가능하다면 cancel 해준다. + deadline 관련하여 불가능 조건찾아야함. 
+    {
+        cancel();
+        return;
+    }
 
     if (nodeFee >= unlockedBalance && sendAll)
     {
@@ -100,13 +113,14 @@ void transfer(const std::shared_ptr<WalletBackend> walletBackend, const bool sen
         return;
     }
 
-    sendTransaction(walletBackend, address, amount, paymentID, sendAll);
+    sendTransaction(walletBackend, address, amount, deadline, paymentID, sendAll);
 }
 
 void sendTransaction(
     const std::shared_ptr<WalletBackend> walletBackend,
     const std::string address,
     const uint64_t amount,
+    const uint64_t deadline,
     const std::string paymentID,
     const bool sendAll)
 {
@@ -134,10 +148,10 @@ void sendTransaction(
     }
 
     Error error;
-    WalletTypes::PreparedTransactionInfo preparedTransaction;
+    WalletTypes::PreparedTransactionInfo preparedTransaction;  //deadline 추가했음. 
 
     std::tie(error, std::ignore, preparedTransaction) = walletBackend->sendTransactionBasic(
-        address, amount, paymentID, sendAll, false /* Don't relay to network */
+        address, amount, deadline, paymentID, sendAll, false /* Don't relay to network */
     );
 
     if (error == NOT_ENOUGH_BALANCE)
@@ -170,7 +184,7 @@ void sendTransaction(
 
         /* Resend the transaction */
         std::tie(error, std::ignore, preparedTransaction) = walletBackend->sendTransactionBasic(
-            address, amount, paymentID, sendAll, false /* Don't relay to network */
+            address, amount, deadline, paymentID, sendAll, false /* Don't relay to network */
         );
 
         /* Still too big, split it up (with users approval) */

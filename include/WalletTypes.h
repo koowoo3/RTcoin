@@ -834,6 +834,8 @@ namespace WalletTypes
         TransactionResult tx;
 
         Crypto::Hash transactionHash;
+
+        uint64_t deadline; //deadline 추가 
     };
 
     struct OutputEntry

@@ -139,6 +139,7 @@ class WalletBackend
     std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionBasic(
         const std::string destination,
         const uint64_t amount,
+        const uint64_t deadline,
         const std::string paymentID,
         const bool sendAll = false,
         const bool sendTransaction = true);

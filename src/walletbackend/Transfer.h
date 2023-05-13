@@ -29,6 +29,7 @@ namespace SendTransaction
     std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionBasic(
         std::string destination,
         const uint64_t amount,
+        const uint64_t deadline,
         std::string paymentID,
         const std::shared_ptr<Nigel> daemon,
         const std::shared_ptr<SubWallets> subWallets,
@@ -97,7 +98,8 @@ namespace SendTransaction
         const std::vector<WalletTypes::TransactionDestination> destinations,
         const std::shared_ptr<SubWallets> subWallets,
         const uint64_t unlockTime,
-        const std::vector<uint8_t> extraData);
+        const std::vector<uint8_t> extraData,
+        const uint64_t deadline);   //deadline 추가
 
     std::tuple<Error, Crypto::Hash>
         relayTransaction(const CryptoNote::Transaction tx, const std::shared_ptr<Nigel> daemon);
@@ -125,7 +127,8 @@ namespace SendTransaction
         const std::shared_ptr<SubWallets> subWallets,
         const uint64_t unlockTime,
         const std::vector<uint8_t> extraData,
-        const bool sendAll);
+        const bool sendAll
+        const uint64_t deadline);   //deadline 추가
 
     Error isTransactionPayloadTooBig(const CryptoNote::Transaction tx, const uint64_t currentHeight);
 

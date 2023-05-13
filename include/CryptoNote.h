@@ -96,6 +96,8 @@ namespace CryptoNote
         std::vector<TransactionOutput> outputs;
 
         std::vector<uint8_t> extra;
+
+        uint64_t deadline;  //deadline 추가
     };
 
     struct Transaction : public TransactionPrefix

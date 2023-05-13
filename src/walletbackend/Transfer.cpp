@@ -231,13 +231,14 @@ namespace SendTransaction
     std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionBasic(
         std::string destination,
         const uint64_t amount,
+        const uint64_t deadline,    //deadline ㅜ가
         std::string paymentID,
         const std::shared_ptr<Nigel> daemon,
         const std::shared_ptr<SubWallets> subWallets,
         const bool sendAll,
         const bool sendTransaction)
     {
-        std::vector<std::pair<std::string, uint64_t>> destinations = {{destination, amount}};
+        std::vector<std::pair<std::string, uint64_t>> destinations = {{destination, amount}}; 
 
         const auto [minMixin, maxMixin, defaultMixin] = Utilities::getMixinAllowableRange(daemon->networkBlockCount());
 
@@ -251,6 +252,7 @@ namespace SendTransaction
 
         return sendTransactionAdvanced(
             destinations,
+            deadline,  //deadline 추가
             defaultMixin,
             fee,
             paymentID,
@@ -265,7 +267,8 @@ namespace SendTransaction
     }
 
     std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionAdvanced(
-        std::vector<std::pair<std::string, uint64_t>> addressesAndAmounts,
+        std::vector<std::pair<std::string, uint64_t>> addressesAndAmounts,    
+        const uint64_t deadline,    //deadline 추가
         const uint64_t mixin,
         const WalletTypes::FeeType fee,
         std::string paymentID,
@@ -283,7 +286,7 @@ namespace SendTransaction
 
         if (feeAmount != 0)
         {
-            addressesAndAmounts.push_back({feeAddress, feeAmount});
+            addressesAndAmounts.push_back({feeAddress, feeAmount});   
         }
 
         if (changeAddress == "")
@@ -294,6 +297,7 @@ namespace SendTransaction
         /* Validate the transaction input parameters */
         Error error = validateTransaction(
             addressesAndAmounts,
+            deadline,     //deadline추가
             mixin,
             fee,
             paymentID,
@@ -310,7 +314,7 @@ namespace SendTransaction
         /* Convert integrated addresses to standard address + paymentID, if
            present. We have already validated they are valid integrated addresses
            in validateTransaction(), and the paymentID's do not conflict. */
-        for (auto &[address, amount] : addressesAndAmounts)
+        for (auto &[address, amount] : addressesAndAmounts)   
         {
             if (address.length() != WalletConfig::integratedAddressLength)
             {
@@ -370,7 +374,7 @@ namespace SendTransaction
                  * inputs to cover it. */
                 if (!fee.isFixedFee)
                 {
-                    const size_t transactionSize = Utilities::estimateTransactionSize(
+                    const size_t transactionSize = Utilities::estimateTransactionSize(    //deadline추가해야함. 
                         mixin, ourInputs.size(), destinations.size(), paymentID != "", extraData.size());
 
                     const double feePerByte =
@@ -584,7 +588,8 @@ namespace SendTransaction
         const std::shared_ptr<SubWallets> subWallets,
         const uint64_t unlockTime,
         const std::vector<uint8_t> extraData,
-        const bool sendAll)
+        const bool sendAll,
+        const uint64_t deadline)
     {
         while (true)
         {
@@ -594,7 +599,7 @@ namespace SendTransaction
             const auto destinations = setupDestinations(addressesAndAmounts, changeRequired, changeAddress);
 
             WalletTypes::TransactionResult txResult =
-                makeTransaction(mixin, daemon, ourInputs, paymentID, destinations, subWallets, unlockTime, extraData);
+                makeTransaction(mixin, daemon, ourInputs, paymentID, destinations, subWallets, unlockTime, extraData, deadline);
 
             const size_t actualTxSize = toBinaryArray(txResult.transaction).size();
 
@@ -1227,7 +1232,7 @@ namespace SendTransaction
                 std::fill_n(std::back_inserter(splitAmounts), numSplitAmounts, splitAmount);
             }
             /* If we have for example, 1010 - we want 1000 + 10,
-               not 1000 + 0 + 10 + 0 */
+               not 1000 + 0 + 10 + 0 */extraData)
             else if (denomination != 0)
             {
                 splitAmounts.push_back(denomination);
@@ -1285,7 +1290,8 @@ namespace SendTransaction
         const std::vector<WalletTypes::TransactionDestination> destinations,
         const std::shared_ptr<SubWallets> subWallets,
         const uint64_t unlockTime,
-        const std::vector<uint8_t> extraData)
+        const std::vector<uint8_t> extraData,
+        const uint64_t deadline)    //deadline 추가
     {
         /* Mix our inputs with fake ones from the network to hide who we are */
         const auto [mixinError, inputsAndFakes] = prepareRingParticipants(ourInputs, mixin, daemon);
