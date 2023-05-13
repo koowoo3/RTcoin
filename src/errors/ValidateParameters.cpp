@@ -57,7 +57,8 @@ Error validateFusionTransaction(
 }
 
 Error validateTransaction(
-    const std::vector<std::pair<std::string, uint64_t>> destinations,
+    const std::vector<std::pair<std::string, uint64_t>> destinations, 
+    const uint64_t deadline,     //deadline 추가
     const uint64_t mixin,
     const WalletTypes::FeeType fee,
     const std::string paymentID,
@@ -110,6 +111,9 @@ Error validateTransaction(
     {
         return error;
     }
+
+
+    //validate deadline 필요.
 
     return SUCCESS;
 }
@@ -291,7 +295,7 @@ Error validateAmount(
     return SUCCESS;
 }
 
-Error validateDestinations(const std::vector<std::pair<std::string, uint64_t>> destinations)
+Error validateDestinations(const std::vector<std::tuple<std::string, uint64_t, uint64_t>> destinations)  //deadline 정보 추가.
 {
     /* Make sure there is at least one destination */
     if (destinations.empty())
@@ -301,7 +305,7 @@ Error validateDestinations(const std::vector<std::pair<std::string, uint64_t>> d
 
     std::vector<std::string> destinationAddresses;
 
-    for (const auto &[destination, amount] : destinations)
+    for (const auto &[destination, amount, deadline] : destinations)
     {
         /* Check all of the amounts are > 0 */
         if (amount == 0)

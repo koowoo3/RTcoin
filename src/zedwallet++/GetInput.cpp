@@ -292,6 +292,92 @@ std::tuple<bool, uint64_t> getAmountToAtomic(const std::string msg, const bool c
     }
 }
 
+std::tuple<bool, uint64_t> getDeadline(const std::string msg, const bool cancelAllowed)   //asking deadline and get deadline info
+{
+    while (true)
+    {
+        std::cout << InformationMsg(msg);
+
+        std::string amountString;
+
+        /* Fixes infinite looping when someone does a ctrl + c */
+        if (!std::getline(std::cin, amountString))
+        {
+            return {false, 0};
+        }
+
+        /* \n == no-op */
+        if (amountString == "")
+        {
+            continue;
+        }
+
+        Utilities::trim(amountString);
+
+        /* If the user entered thousand separators, remove them */
+        Utilities::removeCharFromString(amountString, ',');
+
+        if (amountString == "cancel" && cancelAllowed)
+        {
+            return {false, 0};
+        }
+
+        /* Find the position of the decimal in the string */
+        const uint64_t decimalPos = amountString.find_last_of('.');
+
+        /* Get the length of the decimal part */
+        const uint64_t decimalLength =
+            decimalPos == std::string::npos ? 0 : amountString.substr(decimalPos + 1, amountString.length()).length();
+
+        /* Can't send amounts with more decimal places than supported */
+        if (decimalLength > WalletConfig::numDecimalPlaces)
+        {
+            std::stringstream stream;
+
+            stream << CryptoNote::CRYPTONOTE_NAME << " transfers can have "
+                   << "a max of " << WalletConfig::numDecimalPlaces << " decimal places.\n";
+
+            std::cout << WarningMsg(stream.str());
+
+            continue;
+        }
+
+        /* Remove the decimal place, so we can parse it as an atomic amount */
+        Utilities::removeCharFromString(amountString, '.');
+
+        /* Pad the string with 0's at the end, so 123 becomes 12300, so we
+           can parse it as an atomic amount. 123.45 parses as 12345. */
+        amountString.append(WalletConfig::numDecimalPlaces - decimalLength, '0');
+
+
+
+        //checker에 의해 transaction을 받을지말지 결정해줘야함. 
+        try
+        {
+            unsigned long long amount = std::stoull(amountString);
+
+            if (amount < WalletConfig::minimumSend)
+            {
+                std::cout << WarningMsg("The minimum send allowed is ")
+                          << WarningMsg(Utilities::formatAmount(WalletConfig::minimumSend)) << WarningMsg("!\n");
+            }
+            else
+            {
+                return {true, amount};
+            }
+        }
+        catch (const std::out_of_range &)
+        {
+            std::cout << WarningMsg("Input is too large or too small!");
+        }
+        catch (const std::invalid_argument &)
+        {
+            std::cout << WarningMsg("Failed to parse amount! Ensure you entered "
+                                    "the value correctly.\n");
+        }
+    }
+}
+
 std::tuple<std::string, uint16_t, bool> getDaemonAddress()
 {
     while (true)

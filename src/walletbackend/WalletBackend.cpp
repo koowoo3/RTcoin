@@ -727,6 +727,7 @@ std::tuple<Error, Crypto::Hash> WalletBackend::sendPreparedTransaction(const Cry
 std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> WalletBackend::sendTransactionBasic(
     const std::string destination,
     const uint64_t amount,
+    const uint64_t deadline,
     const std::string paymentID,
     const bool sendAll,
     const bool sendTransaction)
@@ -734,7 +735,7 @@ std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> WalletBack
     std::scoped_lock lock(m_transactionMutex);
 
     const auto [error, hash, preparedTransaction] = SendTransaction::sendTransactionBasic(
-        destination, amount, paymentID, m_daemon, m_subWallets, sendAll, sendTransaction);
+        destination, amount, deadline, paymentID, m_daemon, m_subWallets, sendAll, sendTransaction);
 
     if (!sendTransaction && !error)
     {
