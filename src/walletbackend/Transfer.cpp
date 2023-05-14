@@ -149,9 +149,9 @@ namespace SendTransaction
             }
 
             const uint64_t unlockTime = 0;
-
+            const uint64_t deadline = 0;
             WalletTypes::TransactionResult txResult =
-                makeTransaction(mixin, daemon, ourInputs, paymentID, destinations, subWallets, unlockTime, extraData, deadline);  // add deadline
+                makeTransaction(mixin, daemon, ourInputs, paymentID, destinations, subWallets, unlockTime, extraData, deadline);  
 
             tx = txResult.transaction;
             transactionOutputs = txResult.outputs;
@@ -296,15 +296,15 @@ namespace SendTransaction
 
         /* Validate the transaction input parameters */
         Error error = validateTransaction(
-            addressesAndAmounts,
-            deadline,     //deadline추가      Deadline는 validate  뺄까
+            addressesAndAmounts,                    //deadline추가?              
             mixin,
             fee,
             paymentID,
             addressesToTakeFrom,
             changeAddress,
             subWallets,
-            daemon->networkBlockCount());
+            daemon->networkBlockCount()
+            );
 
         if (error)
         {
@@ -559,8 +559,7 @@ namespace SendTransaction
             txInfo.inputs,
             txInfo.changeAddress,
             txInfo.changeRequired,
-            subWallets,
-            txInfo.deadline);       //add deadline 
+            subWallets);     
 
         /* Update our locked balance with the incoming funds */
         storeUnconfirmedIncomingInputs(subWallets, txInfo.tx.outputs, txInfo.tx.txKeyPair.publicKey, txHash);
@@ -717,8 +716,7 @@ namespace SendTransaction
         const std::vector<WalletTypes::TxInputAndOwner> ourInputs,
         const std::string changeAddress,
         const uint64_t changeRequired,
-        const std::shared_ptr<SubWallets> subWallets,
-        const uint64_t deadline)  //deadline추가
+        const std::shared_ptr<SubWallets> subWallets) 
     {
         std::unordered_map<Crypto::PublicKey, int64_t> transfers;
 
@@ -745,7 +743,7 @@ namespace SendTransaction
         /* Create the unconfirmed transaction (Will be overwritten by the
            confirmed transaction later) */
         WalletTypes::Transaction tx(
-            transfers, hash, fee, timestamp, blockHeight, paymentID, unlockTime, isCoinbaseTransaction, deadline);    //deadline 추가
+            transfers, hash, fee, timestamp, blockHeight, paymentID, unlockTime, isCoinbaseTransaction);   
 
         subWallets->addUnconfirmedTransaction(tx);
     }
@@ -1235,7 +1233,7 @@ namespace SendTransaction
                 std::fill_n(std::back_inserter(splitAmounts), numSplitAmounts, splitAmount);
             }
             /* If we have for example, 1010 - we want 1000 + 10,
-               not 1000 + 0 + 10 + 0 */extraData)
+               not 1000 + 0 + 10 + 0 extraData)*/
             else if (denomination != 0)
             {
                 splitAmounts.push_back(denomination);

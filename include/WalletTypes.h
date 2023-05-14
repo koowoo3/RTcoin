@@ -522,8 +522,7 @@ namespace WalletTypes
             const uint64_t blockHeight,
             const std::string paymentID,
             const uint64_t unlockTime,
-            const bool isCoinbaseTransaction,
-            const uint64_t deadline):   //deadline 추가
+            const bool isCoinbaseTransaction):
             transfers(transfers),
             hash(hash),
             fee(fee),
@@ -531,8 +530,8 @@ namespace WalletTypes
             blockHeight(blockHeight),
             paymentID(paymentID),
             unlockTime(unlockTime),
-            isCoinbaseTransaction(isCoinbaseTransaction),
-            deadline(deadline)     //deadline 추가
+            isCoinbaseTransaction(isCoinbaseTransaction)
+
         {
         }
 
@@ -597,8 +596,7 @@ namespace WalletTypes
         /* Was this transaction a miner reward / coinbase transaction */
         bool isCoinbaseTransaction;
 
-        /*deadline 추가*/
-        uint64_t deadline;         //추가
+
 
         /* Converts the class to a json object */
         void toJSON(rapidjson::Writer<rapidjson::StringBuffer> &writer) const
@@ -840,7 +838,6 @@ namespace WalletTypes
 
         Crypto::Hash transactionHash;
 
-        uint64_t deadline; //deadline 추가 
     };
 
     struct OutputEntry

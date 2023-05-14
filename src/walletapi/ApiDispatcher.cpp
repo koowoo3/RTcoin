@@ -925,6 +925,8 @@ std::tuple<Error, uint16_t> ApiDispatcher::makeBasicTransaction(
 
     const uint64_t amount = getUint64FromJSON(body, "amount");
 
+    const uint64_t deadline = getUint64FromJSON(body, "deadline");   //deadline 추가
+
     std::string paymentID;
 
     if (hasMember(body, "paymentID"))
@@ -935,6 +937,7 @@ std::tuple<Error, uint16_t> ApiDispatcher::makeBasicTransaction(
     auto [error, hash, preparedTransaction] = m_walletBackend->sendTransactionBasic(
         address,
         amount,
+        deadline,     //deadline 추가
         paymentID,
         false, /* Don't send all */
         sendTransaction);
@@ -999,6 +1002,7 @@ std::tuple<Error, uint16_t> ApiDispatcher::makeAdvancedTransaction(
         destinations.emplace_back(address, amount);
     }
 
+    const uint64_t deadline = getUint64FromJSON(body, "deadline");   //deadline추가
     uint64_t mixin;
 
     if (hasMember(body, "mixin"))
@@ -1068,6 +1072,7 @@ std::tuple<Error, uint16_t> ApiDispatcher::makeAdvancedTransaction(
 
     auto [error, hash, preparedTransaction] = m_walletBackend->sendTransactionAdvanced(
         destinations,
+        deadline,
         mixin,
         fee,
         paymentID,

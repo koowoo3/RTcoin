@@ -85,16 +85,27 @@ void transfer(const std::shared_ptr<WalletBackend> walletBackend, const bool sen
             cancel();
             return;
         }
+
+        bool succ;
+        uint64_t deadline;  // 
+                            
+        std::tie(succ, deadline) = getDeadline("what time do you want to end?", cancelAllowed);      // 1
+
+        if(!succ)  //deadline이 불가능하다면 cancel 해준다. + deadline 관련하여 불가능 조건찾아야함. 
+        {
+            cancel();
+            return;
+        }
     }
     /*deadline chrono system_clock::time_point start = system_clock::now(); 로 현재시간 구하고
     start += std::chrono::seconds{ 10 }; 이런식으로 만들어서 deadline = start 로 만들면 될듯.
     */
-    bool success;
+    bool succ;
     uint64_t deadline;  // 
                         
-    std::tie(success, deadline) = getDeadline("what time do you want to end?", cancelAllowed);      // 1
+    std::tie(succ, deadline) = getDeadline("what time do you want to end?", cancelAllowed);      // 1
 
-    if(!success)  //deadline이 불가능하다면 cancel 해준다. + deadline 관련하여 불가능 조건찾아야함. 
+    if(!succ)  //deadline이 불가능하다면 cancel 해준다. + deadline 관련하여 불가능 조건찾아야함. 
     {
         cancel();
         return;
@@ -229,6 +240,7 @@ void sendTransaction(    //2
         std::cout << SuccessMsg("Transaction has been sent!\nHash: ") << SuccessMsg(hash) << std::endl;
     }
 }
+
 
 bool confirmTransaction(
     const std::shared_ptr<WalletBackend> walletBackend,

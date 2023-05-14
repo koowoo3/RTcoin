@@ -20,8 +20,7 @@ Error validateFusionTransaction(
     const std::optional<uint64_t> optimizeTarget);
 
 Error validateTransaction(
-    const std::vector<std::pair<std::string, uint64_t>> destinations,
-    const uint64_t deadline,    //deadline 추가
+    const std::vector<std::pair<std::string, uint64_t>> destinations,   //deadline 추가?
     const uint64_t mixin,
     const WalletTypes::FeeType fee,
     const std::string paymentID,

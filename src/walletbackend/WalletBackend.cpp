@@ -727,7 +727,7 @@ std::tuple<Error, Crypto::Hash> WalletBackend::sendPreparedTransaction(const Cry
 std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> WalletBackend::sendTransactionBasic(
     const std::string destination,
     const uint64_t amount,
-    const uint64_t deadline,
+    const uint64_t deadline,    //deadline 추가
     const std::string paymentID,
     const bool sendAll,
     const bool sendTransaction)
@@ -747,6 +747,7 @@ std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> WalletBack
 
 std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> WalletBackend::sendTransactionAdvanced(
     const std::vector<std::pair<std::string, uint64_t>> destinations,
+    const uint64_t deadline,   //add deadline
     const uint64_t mixin,
     const WalletTypes::FeeType fee,
     const std::string paymentID,
@@ -761,6 +762,7 @@ std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> WalletBack
 
     const auto [error, hash, preparedTransaction] = SendTransaction::sendTransactionAdvanced(
         destinations,
+        deadline,    //add deadline
         mixin,
         fee,
         paymentID,

@@ -205,12 +205,16 @@ void sendFromAddressBook(const std::shared_ptr<WalletBackend> walletBackend)
     const auto [success, amount] =
         getAmountToAtomic("How much " + WalletConfig::ticker + " do you want to send?: ", cancelAllowed);
 
-    if (!success)
+    uint64_t dead; 
+    bool succ;                
+    std::tie(succ, dead) = getDeadline("what time do you want to end?", cancelAllowed);      // 1
+
+    if (!succ)
     {
         std::cout << WarningMsg("Cancelling transaction.\n");
     }
 
-    sendTransaction(walletBackend, addressBookEntry.address, amount, addressBookEntry.paymentID);
+    sendTransaction(walletBackend, addressBookEntry.address, amount, dead, addressBookEntry.paymentID);
 }
 
 bool isAddressBookEmpty(const std::vector<AddressBookEntry> addressBook)

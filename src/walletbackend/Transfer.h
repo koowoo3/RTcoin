@@ -24,7 +24,7 @@ namespace SendTransaction
         const std::shared_ptr<Nigel> daemon,
         const std::shared_ptr<SubWallets> subWallets,
         const std::vector<uint8_t> extraData,
-        const std::optional<uint64_t> optimizeTarget);
+        const std::optional<uint64_t> optimizeTarget);   
 
     std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionBasic(
         std::string destination,
@@ -38,6 +38,7 @@ namespace SendTransaction
 
     std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionAdvanced(
         std::vector<std::pair<std::string, uint64_t>> addressesAndAmounts,
+        const uint64_t deadline,
         const uint64_t mixin,
         const WalletTypes::FeeType fee,
         std::string paymentID,
@@ -113,6 +114,8 @@ namespace SendTransaction
         const uint64_t changeRequired,
         const std::shared_ptr<SubWallets> subWallets);
 
+
+
     std::tuple<bool, WalletTypes::TransactionResult, uint64_t, uint64_t> tryMakeFeePerByteTransaction(
         const uint64_t sumOfInputs,
         uint64_t totalAmount,
@@ -127,7 +130,7 @@ namespace SendTransaction
         const std::shared_ptr<SubWallets> subWallets,
         const uint64_t unlockTime,
         const std::vector<uint8_t> extraData,
-        const bool sendAll
+        const bool sendAll,
         const uint64_t deadline);   //deadline 추가
 
     Error isTransactionPayloadTooBig(const CryptoNote::Transaction tx, const uint64_t currentHeight);

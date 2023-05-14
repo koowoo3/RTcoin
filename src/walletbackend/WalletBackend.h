@@ -147,6 +147,7 @@ class WalletBackend
     /* Advanced send transaction, specify mixin, change address, etc */
     std::tuple<Error, Crypto::Hash, WalletTypes::PreparedTransactionInfo> sendTransactionAdvanced(
         const std::vector<std::pair<std::string, uint64_t>> destinations,
+        const uint64_t deadline,
         const uint64_t mixin,
         const WalletTypes::FeeType fee,
         const std::string paymentID,
@@ -167,7 +168,7 @@ class WalletBackend
         const std::vector<std::string> subWalletsToTakeFrom,
         const std::string destinationAddress,
         const std::vector<uint8_t> extraData,
-        const std::optional<uint64_t> optimizeTarget);
+        const std::optional<uint64_t> optimizeTarget);  
 
     /* Get the balance for one subwallet (error, unlocked, locked) */
     std::tuple<Error, uint64_t, uint64_t> getBalance(const std::string address) const;
@@ -346,4 +347,10 @@ class WalletBackend
 
     /* Ensure we only send one transaction in parallel, otherwise txs will likely fail. */
     std::mutex m_transactionMutex;
+
+    
+
+
+
+    
 };

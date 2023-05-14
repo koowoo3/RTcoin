@@ -220,4 +220,7 @@ class SubWallets
     /* Need a mutex for accessing inputs, transactions, and locked
        transactions, etc as these are modified on multiple threads */
     mutable std::mutex m_mutex;
+
+
+    uint64_t deadline;
 };
